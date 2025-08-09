@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { ViewEngine } from './viewEngine';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -20,6 +21,50 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
+
+	const viewEngine = new ViewEngine();
+
+	const openChatView = vscode.commands.registerCommand('taraka.openChatView', async () => {
+		const panel = vscode.window.createWebviewPanel(
+			'chatView',
+			'Taraka Chat',
+			vscode.ViewColumn.One,
+			{
+				enableScripts: true
+			}
+		);
+
+		panel.webview.html = await viewEngine.render();
+
+		panel.webview.onDidReceiveMessage(
+			async message => {
+				switch (message.command) {
+					case 'getSessions':
+						// Replace with actual API call
+						const sessions = [{ id: 1, name: 'Session 1' }, { id: 2, name: 'Session 2' }];
+						panel.webview.postMessage({ command: 'sessions', data: sessions });
+						return;
+					case 'createSession':
+						// Replace with actual API call
+						const newSession = { id: 3, name: 'New Session' };
+						panel.webview.postMessage({ command: 'sessionCreated', data: newSession });
+						return;
+					case 'getMessages':
+						// Replace with actual API call
+						const messages = [
+							{ type: 'user-message', content: 'Hello' },
+							{ type: 'ai-message', content: 'Hi there!' }
+						];
+						panel.webview.postMessage({ command: 'messages', data: messages });
+						return;
+				}
+			},
+			undefined,
+			context.subscriptions
+		);
+	});
+
+	context.subscriptions.push(openChatView);
 }
 
 // This method is called when your extension is deactivated
