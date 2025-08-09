@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class ViewEngine {
-    private readonly viewsPath = path.join(__dirname, 'views');
+    private readonly viewsPath = path.join(__dirname, '../src/views');
 
     public async render(): Promise<string> {
         const indexPath = path.join(this.viewsPath, 'index.html');

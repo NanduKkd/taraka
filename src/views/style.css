@@ -1,9 +1,11 @@
 body {
-    font-family: sans-serif;
+    font-family: var(--vscode-font-family, sans-serif);
     display: flex;
     flex-direction: column;
     height: 100vh;
     margin: 0;
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-editor-background);
 }
 
 .container {
@@ -18,7 +20,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 10px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--vscode-textSeparator-foreground);
 }
 
 .chat-view {
@@ -35,9 +37,17 @@ body {
     width: 100%;
     height: 80px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--vscode-input-border);
     border-radius: 5px;
     box-sizing: border-box;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    font-family: var(--vscode-editor-font-family);
+}
+
+#message-input:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: -1px;
 }
 
 .dropdown-menu {
@@ -45,11 +55,13 @@ body {
     position: absolute;
     bottom: 100%;
     left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
+    background-color: var(--vscode-dropdown-background);
+    border: 1px solid var(--vscode-dropdown-border);
     border-radius: 5px;
     max-height: 150px;
     overflow-y: auto;
+    z-index: 10;
+    color: var(--vscode-dropdown-foreground);
 }
 
 .dropdown-menu.show {
@@ -62,7 +74,7 @@ body {
 }
 
 .dropdown-item:hover {
-    background-color: #f0f0f0;
+    background-color: var(--vscode-list-hoverBackground);
 }
 
 .footer {
@@ -70,7 +82,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-top: 10px;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--vscode-textSeparator-foreground);
 }
 
 .message {
@@ -80,22 +92,22 @@ body {
 }
 
 .user-message {
-    background-color: #e0f7fa;
+    background-color: var(--vscode-chat-requestBackground, #e0f7fa);
     align-self: flex-end;
 }
 
 .ai-message {
-    background-color: #f1f8e9;
+    background-color: var(--vscode-chat-requestBubbleBackground, #f1f8e9);
 }
 
 .thinking-message {
-    background-color: #f5f5f5;
-    color: #666;
+    background-color: var(--vscode-textBlockQuote-background, #f5f5f5);
+    color: var(--vscode-descriptionForeground, #666);
 }
 
 .tool-call-card {
-    background-color: #fffde7;
-    border: 1px solid #fbc02d;
+    background-color: var(--vscode-peekViewResult-matchHighlightBackground, #fffde7);
+    border: 1px solid var(--vscode-peekView-border, #fbc02d);
     padding: 10px;
     border-radius: 5px;
 }
@@ -106,5 +118,30 @@ body {
 
 .tool-call-subtitle {
     font-size: 0.9em;
-    color: #666;
+    color: var(--vscode-descriptionForeground, #666);
+}
+
+button,
+select {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+select {
+    padding: 4px 9px;
+}
+
+input[type="checkbox"] {
+    accent-color: var(--vscode-button-background);
+    background-color: var(--vscode-checkbox-background);
+    border: 1px solid var(--vscode-checkbox-border);
+    color: var(--vscode-checkbox-foreground);
 }
