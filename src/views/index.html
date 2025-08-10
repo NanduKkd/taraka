@@ -7,39 +7,50 @@
     <!-- {{style.css}} -->
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <select id="session-dropdown"></select>
-            <button id="new-session-btn">New Session</button>
-        </div>
-        <div class="chat-view" id="chat-view">
-            <div class="message user-message">
-                <p>This is a user message.</p>
+    <div id="login-container">
+        <h1>Login</h1>
+        <input type="password" id="password-input" placeholder="Enter password">
+        <button id="login-btn">Login</button>
+        <p id="error-message" class="hidden"></p>
+    </div>
+
+    <div id="loader" class="hidden"></div>
+
+    <div id="main-content" class="hidden">
+        <div class="container">
+            <div class="header">
+                <select id="session-dropdown"></select>
+                <button id="new-session-btn">New Session</button>
             </div>
-            <div class="message ai-message">
-                <p>This is an AI message.</p>
-            </div>
-            <div class="message thinking-message">
-                <p>This is a thinking message.</p>
-            </div>
-            <div class="message ai-message">
-                <div class="tool-call-card">
-                    <div class="tool-call-title">Tool Call: readFile</div>
-                    <div class="tool-call-subtitle">path/to/file.txt</div>
+            <div class="chat-view" id="chat-view">
+                <div class="message user-message">
+                    <p>This is a user message.</p>
+                </div>
+                <div class="message ai-message">
+                    <p>This is an AI message.</p>
+                </div>
+                <div class="message thinking-message">
+                    <p>This is a thinking message.</p>
+                </div>
+                <div class="message ai-message">
+                    <div class="tool-call-card">
+                        <div class="tool-call-title">Tool Call: readFile</div>
+                        <div class="tool-call-subtitle">path/to/file.txt</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="message-area">
-            <textarea id="message-input" placeholder="Type your message..."></textarea>
-            <div id="mention-dropdown" class="dropdown-menu"></div>
-        </div>
-        <div class="footer">
-            <div>
-                <select id="model-dropdown"></select>
-                <input type="checkbox" id="yolo-mode" name="yolo-mode">
-                <label for="yolo-mode">YOLO Mode</label>
+            <div class="message-area">
+                <textarea id="message-input" placeholder="Type your message..."></textarea>
+                <div id="mention-dropdown" class="dropdown-menu"></div>
             </div>
-            <button id="send-btn">Send</button>
+            <div class="footer">
+                <div>
+                    <select id="model-dropdown"></select>
+                    <input type="checkbox" id="yolo-mode" name="yolo-mode">
+                    <label for="yolo-mode">YOLO Mode</label>
+                </div>
+                <button id="send-btn">Send</button>
+            </div>
         </div>
     </div>
     <!-- {{script.js}} -->

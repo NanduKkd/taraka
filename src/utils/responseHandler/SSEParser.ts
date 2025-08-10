@@ -1,7 +1,7 @@
 import { Transform } from 'node:stream';
 
 class SSEParser extends Transform {
-  _saved = '';
+  _incompletePreviousChunks = '';
   constructor(options={}) {
     super({...options, objectMode: true});
   }
@@ -11,16 +11,16 @@ class SSEParser extends Transform {
       out = chunk.toString();
 		else
 			out = chunk;
-    this._saved += chunk;
+    this._incompletePreviousChunks += chunk;
     const reg = /(event: (?<event>.+)\n)?data: (?<data>.+)\r?\n\r?\n/g;
     let res, nextStart = null;
-    while(res = reg.exec(this._saved)) {
+    while(res = reg.exec(this._incompletePreviousChunks)) {
 			if(!res?.groups) continue;
       nextStart = reg.lastIndex;
       this.push({event: res.groups.event, data: res.groups.data})
     }
     if(nextStart) {
-      this._saved = this._saved.substring(nextStart);
+      this._incompletePreviousChunks = this._incompletePreviousChunks.substring(nextStart);
     }
     callback();
   }
