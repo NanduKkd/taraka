@@ -45,6 +45,10 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "glob": "^11.0.3"
+    "@supabase/supabase-js": "^2.54.0",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.1",
+    "glob": "^11.0.3",
+    "zod": "^4.0.17"
   }
 }
