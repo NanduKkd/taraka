@@ -235,6 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedSession = sessionDropdown.value;
     const selectedModel = modelDropdown.value;
     const yoloMode = yoloModeCheckbox.checked;
+    currentAiMessage = null;
+    lastContent = null;
 
     if (message.trim() === '') return;
 
