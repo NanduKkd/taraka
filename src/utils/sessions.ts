@@ -5,7 +5,8 @@ export type Session = Tables<"sessions">;
 export type Message = Tables<"messages">;
 
 export async function listSessions(machineId: string, os: string, path: string): Promise<Session[]> {
-  const { data, error } = await supabase.from('sessions').select().eq('machine_id', machineId).eq('os', os).eq('path', path);
+  const { data, error } = await supabase.from('sessions').select().eq('machine_id', machineId).eq('os', os).eq('path', path).order('created_at', {ascending: false})
+  console.log(data, error, 'list sessions', machineId, os, path)
   if (error) {
     console.error('Failed to list sessions:', error);
     return [];
@@ -23,9 +24,9 @@ export async function createSession(machineId: string, os: string, path: string)
 }
 
 export async function getMessages(sessionId: number): Promise<Message[]> {
-    const { data, error } = await supabase.from('messages').select().eq('session_id', sessionId);
+    const { data, error } = await supabase.from('messages').select().eq('session_id', sessionId).order('created_at', {ascending: true});
     if (error) {
-        console.error('Failed to get messages:', error);
+        console.error('Failed to get messages:', error, {sessionId});
         return [];
     }
     return data || [];

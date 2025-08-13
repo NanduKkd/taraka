@@ -25,7 +25,7 @@ class AiApiError extends Error {
 export const sendMessage = async(prompt_id: string, session_id: number, content: ToolResultContentBlock[] | UserContentBlock[], model: modelData): Promise<Readable> => {
 	try {
 		const modelData = model.split(' ');
-		const res = await aiApi({ method: 'POST', data: { session_id, id: prompt_id, messageContent: content, model: modelData[0], provider: modelData[1] }, responseType: 'stream' });
+		const res = await aiApi({ method: 'POST', data: { type: 'chat', session_id, id: prompt_id, messageContent: content, model: modelData[1], provider: modelData[0] }, responseType: 'stream' });
 		return res.data;
 	} catch (error) {
 		if(!(error instanceof Error))
@@ -38,6 +38,10 @@ export const sendMessage = async(prompt_id: string, session_id: number, content:
 			throw new Error(error.message);
 		}
 	}
+}
+export const sendCodeReplace = async({ filePath, actualCode, newCode }: {filePath: string, actualCode: string, newCode: string}): Promise<string> => {
+  const res = await aiApi({ method: 'POST', data: { type: 'code_replace', filePath, actualCode, newCode } })
+  return res.data.code;
 }
 
 export default aiApi;

@@ -35,9 +35,6 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-.hidden {
-    display: none;
-}
 
 .container {
     display: flex;
@@ -58,6 +55,8 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 10px 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .message-area {
@@ -120,28 +119,30 @@ body {
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
+    width: 80%;
 }
 
 .user-message {
-    background-color: var(--vscode-chat-requestBackground, #e0f7fa);
+    background-color: var(--vscode-chat-requestBubbleBackground);
     align-self: flex-end;
 }
 
 .ai-message {
-    background-color: var(--vscode-chat-requestBubbleBackground, #f1f8e9);
+    background-color: var(--vscode-chat-requestBackground);
 }
 
 .thinking-message {
-    background-color: var(--vscode-textBlockQuote-background, #f5f5f5);
-    color: var(--vscode-descriptionForeground, #666);
+    background-color: var(--vscode-textBlockQuote-background);
+    color: var(--vscode-descriptionForeground);
 }
 
 .tool-call-card {
-    background-color: var(--vscode-peekViewResult-matchHighlightBackground, #fffde7);
+    background-color: var(--vscode-peekViewResult-matchHighlightBackground);
     border: 1px solid var(--vscode-peekView-border, #fbc02d);
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
+    width: 50%;
 }
 
 .tool-call-title {
@@ -150,7 +151,7 @@ body {
 
 .tool-call-subtitle {
     font-size: 0.9em;
-    color: var(--vscode-descriptionForeground, #666);
+    color: var(--vscode-descriptionForeground);
 }
 
 .tool-call-args {
@@ -168,6 +169,7 @@ body {
     border-radius: 5px;
     margin-bottom: 10px;
     border: 1px solid;
+    width: 50%;
 }
 
 .tool-response-title {
@@ -182,18 +184,52 @@ body {
 }
 
 .tool-response-success {
-    border-color: var(--vscode-debugIcon-startForeground, #4caf50);
-    background-color: var(--vscode-debugTokenExpression-number, #e8f5e9);
+    background-color: var(--vscode-banner-background);
 }
 
 .tool-response-failed {
     border-color: var(--vscode-errorForeground, #f44336);
-    background-color: var(--vscode-errorBackground, #ffebee);
+    background-color: var(--vscode-errorBackground);
 }
 
 .tool-response-error {
     border-color: var(--vscode-errorForeground, #f44336);
-    background-color: var(--vscode-errorBackground, #ffebee);
+    background-color: var(--vscode-errorBackground);
+}
+
+.tool-response-error {
+    border-color: var(--vscode-errorForeground, #f44336);
+    background-color: var(--vscode-errorBackground);
+}
+
+.tool-call-header,
+.tool-response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-bottom: 5px;
+}
+
+.toggle-icon {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 10px;
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content.hidden {
+    max-height: 0;
+}
+
+.collapsible-content:not(.collapsed) {
+    max-height: 500px;
+    transition: max-height 0.3s ease-in;
 }
 
 button,
@@ -219,4 +255,8 @@ input[type="checkbox"] {
     background-color: var(--vscode-checkbox-background);
     border: 1px solid var(--vscode-checkbox-border);
     color: var(--vscode-checkbox-foreground);
+}
+
+.hidden {
+    display: none !important;
 }

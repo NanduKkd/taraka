@@ -17,7 +17,7 @@ class SSEParser extends Transform {
     while(res = reg.exec(this._incompletePreviousChunks)) {
 			if(!res?.groups) continue;
       nextStart = reg.lastIndex;
-      this.push({event: res.groups.event, data: res.groups.data})
+      this.push({event: res.groups.event, data: JSON.parse(res.groups.data)})
     }
     if(nextStart) {
       this._incompletePreviousChunks = this._incompletePreviousChunks.substring(nextStart);

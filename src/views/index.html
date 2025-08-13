@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat UI</title>
+    <!-- {{marked.umd.js}} -->
     <!-- {{style.css}} -->
 </head>
 <body>
     <div id="login-container">
         <h1>Login</h1>
-        <input type="password" id="password-input" placeholder="Enter password">
+        <input type="email" value="nandukkd7164@gmail.com" id="email-input" placeholder="Enter email">
+        <input value="Password@123" id="password-input" placeholder="Enter password">
         <button id="login-btn">Login</button>
         <p id="error-message" class="hidden"></p>
     </div>
@@ -45,7 +47,10 @@
             </div>
             <div class="footer">
                 <div>
-                    <select id="model-dropdown"></select>
+                    <select id="model-dropdown">
+                      <option value="googleai gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                      <option value="googleai gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    </select>
                     <input type="checkbox" id="yolo-mode" name="yolo-mode">
                     <label for="yolo-mode">YOLO Mode</label>
                 </div>

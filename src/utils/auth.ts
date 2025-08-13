@@ -1,6 +1,7 @@
 import { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import * as vscode from 'vscode';
+import { setAuth } from './aiApi'
 
 export class Auth {
     private static session: Session | null = null;
@@ -19,13 +20,13 @@ export class Auth {
         }
     }
 
-    public static async signIn(context: vscode.ExtensionContext, password: string): Promise<boolean> {
-        const email = await this.getEmail();
+    public static async signIn(context: vscode.ExtensionContext, email: string, password: string): Promise<boolean> {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (data.session) {
             this.session = data.session;
             await context.secrets.store('supabase.refreshToken', data.session.refresh_token);
+            setAuth(data.session.access_token)
             supabase.auth.setSession(data.session);
             return true;
         }

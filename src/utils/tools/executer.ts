@@ -1,5 +1,6 @@
 import { toolCall, toolCallName } from './validations';
 import { listFiles, FileSystemItem, writeFile, readFile, grepSearch, runCommand } from '../workspaceInterface';
+import executeWrite from './executeWrite';
 
 type toolResponse<
   T1,
@@ -29,28 +30,43 @@ export type toolCallResponse<T = toolCallName> =
 
 const makeOutput = <T>(data: T): { status: 'success', data: T } => ({ status: 'success', data });
 
-export async function executer<T extends toolCallName, R extends toolCallResponse<T>>(tool: toolCall<T>): Promise<R> {
+export async function executer(tool: toolCall<'list_dir'>): Promise<toolCallResponse<'list_dir'>>;
+export async function executer(tool: toolCall<'read_file'>): Promise<toolCallResponse<'read_file'>>;
+export async function executer(tool: toolCall<'write_file'>): Promise<toolCallResponse<'write_file'>>;
+export async function executer(tool: toolCall<'grep_search'>): Promise<toolCallResponse<'grep_search'>>;
+export async function executer(tool: toolCall<'run_terminal_command'>): Promise<toolCallResponse<'run_terminal_command'>>;
+export async function executer(tool: toolCall<toolCallName>): Promise<toolCallResponse> {
   try {
-    if(tool.name==='list_dir') {
-      const out: toolCallResponse<'list_dir'> = makeOutput({ items: await listFiles(tool.args.folderPath, tool.args.search || '', 1) });
-      return out as R;
-    } else if(tool.name==='read_file') {
-      const out: toolCallResponse<'read_file'> = makeOutput({ text: await readFile(tool.args.path, tool.args.startLineInclusive, tool.args.endLineExclusive) });
-      return out as R;
-    } else if(tool.name==='write_file') {
-      await writeFile(tool.args.filePath, tool.args.content, tool.args.shouldCreateNewFile || false)
-      const out: toolCallResponse<'write_file'> = makeOutput({ message: "File written successfully" });
-      return out as R;
-    } else if(tool.name==='grep_search') {
-      const out: toolCallResponse<'grep_search'> = makeOutput({ files: await grepSearch(tool.args.dirPath, tool.args.search) });
-      return out as R;
-    } else if(tool.name==='run_terminal_command') {
-      const out: toolCallResponse<'run_terminal_command'> = makeOutput({ output: await runCommand(tool.args.command) });
-      return out as R;
-    } else {
-      throw new Error("Failed");
+    switch (tool.name) {
+      case 'list_dir': {
+        const out: toolCallResponse<typeof tool.name> = makeOutput({items: await listFiles(tool.args.folderPath, tool.args.search || '', 1)});
+        return out;
+      }
+      case 'read_file': {
+        const text = await readFile(tool.args.path, tool.args.startLineInclusive, tool.args.endLineExclusive);
+        const out: toolCallResponse<typeof tool.name> = makeOutput({ text });
+        return out;
+      }
+      case 'write_file': {
+        await executeWrite(tool.args.filePath, tool.args.content);
+        const out: toolCallResponse<typeof tool.name> = makeOutput({ message: "File written successfully" });
+        return out;
+      }
+      case 'grep_search': {
+        const files = await grepSearch(tool.args.dirPath, tool.args.search);
+        const out: toolCallResponse<typeof tool.name> = makeOutput({ files });
+        return out;
+      }
+      case 'run_terminal_command': {
+        const output = await runCommand(tool.args.command);
+        const out: toolCallResponse<typeof tool.name> = makeOutput({ output });
+        return out;
+      }
+      default:
+        throw new Error(`Invalid tool provided`);
     }
   } catch (error) {
-    return { status: 'error', error: { message: error instanceof Error ? error.message : 'Failed to run tool: Unknown error' } } as R;
+    const message = error instanceof Error ? error.message : 'Failed to run tool: Unknown error';
+    return { status: 'error', error: { message } };
   }
 }

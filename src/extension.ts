@@ -8,6 +8,85 @@ import * as os from 'os';
 import AIHandler from './utils/responseHandler/handler';
 import { randomUUID } from 'crypto';
 
+class ChatViewProvider implements vscode.WebviewViewProvider {
+    public static readonly viewId = 'taraka-chat-view';
+
+    private _view?: vscode.WebviewView;
+    private _extensionUri: vscode.Uri;
+    private _viewEngine: ViewEngine;
+
+    constructor(private readonly _context: vscode.ExtensionContext, viewEngine: ViewEngine) {
+        this._extensionUri = _context.extensionUri;
+        this._viewEngine = viewEngine;
+    }
+
+    public async resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken,
+    ) {
+      try {
+        this._view = webviewView;
+
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [this._extensionUri],
+        };
+
+      webviewView.webview.html = '<html><head></head><body style="height: 100vw; width: 100vw; margin: 0; align-items: center; justify-content: center;"><div>Hey There!</div></body></html>';
+        webviewView.webview.html = await this._getHtmlForWebview(webviewView.webview);
+
+        webviewView.webview.onDidReceiveMessage(
+            async message => {
+                switch (message.command) {
+                    case 'login':
+                        const success = await Auth.signIn(this._context, message.data.email, message.data.password);
+                        if (success) {
+                            webviewView.webview.postMessage({ command: 'loginResponse', data: { success: true } });
+                        } else {
+                            webviewView.webview.postMessage({ command: 'loginResponse', data: { success: false, error: 'Incorrect password' } });
+                        }
+                        return;
+                    case 'getSessions':
+                        const sessions = await listSessions(await vscode.env.machineId, os.platform(), vscode.workspace.workspaceFolders?.[0].uri.fsPath || '');
+                        webviewView.webview.postMessage({ command: 'sessions', data: sessions });
+                        return;
+                    case 'createSession':
+                        const newSession = await createSession(await vscode.env.machineId, os.platform(), vscode.workspace.workspaceFolders?.[0].uri.fsPath || '');
+                        if (newSession) {
+                            webviewView.webview.postMessage({ command: 'sessionCreated', data: newSession });
+                        }
+                        return;
+                    case 'getMessages':
+                        const messages = await getMessages(message.data.sessionId);
+                        webviewView.webview.postMessage({ command: 'messages', data: messages });
+                        return;
+                    case 'sendMessage':
+                        const { message: msg, sessionId, model } = message.data;
+                        const handler = new AIHandler(randomUUID(), sessionId, msg, model);
+                        handler.on('data', (data) => {
+                            webviewView.webview.postMessage({ command: 'aiResponse', data });
+                        });
+                        handler.on('error', (error) => {
+                            webviewView.webview.postMessage({ command: 'aiResponseError', data: { error: error.message } });
+                        });
+                        return;
+                }
+            },
+            undefined,
+            this._context.subscriptions
+        );
+      } catch (error) {
+        console.error('extension error')
+        console.error(error)
+      }
+    }
+
+    private _getHtmlForWebview(webview: vscode.Webview): Promise<string> {
+        return this._viewEngine.render();
+    }
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
@@ -21,70 +100,21 @@ export async function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with regi>sterCommand
 	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('taraka.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Taraka!');
-	});
-
-	context.subscriptions.push(disposable);
 
 	const viewEngine = new ViewEngine();
 
-	const openChatView = vscode.commands.registerCommand('taraka.openChatView', async () => {
-		const panel = vscode.window.createWebviewPanel(
-			'chatView',
-			'Taraka Chat',
-			vscode.ViewColumn.One,
-			{
-				enableScripts: true
-			}
-		);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			ChatViewProvider.viewId,
 
-		panel.webview.html = await viewEngine.render();
+			new ChatViewProvider(context, viewEngine)
+		)
+	);
 
-		const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '';
-
-		panel.webview.onDidReceiveMessage(
-			async message => {
-				switch (message.command) {
-					case 'login':
-						const success = await Auth.signIn(context, message.data.password);
-						if (success) {
-							panel.webview.postMessage({ command: 'loginResponse', data: { success: true } });
-						} else {
-							panel.webview.postMessage({ command: 'loginResponse', data: { success: false, error: 'Incorrect password' } });
-						}
-						return;
-					case 'getSessions':
-						const sessions = await listSessions(await vscode.env.machineId, os.platform(), workspaceFolder);
-						panel.webview.postMessage({ command: 'sessions', data: sessions });
-						return;
-					case 'createSession':
-						const newSession = await createSession(await vscode.env.machineId, os.platform(), workspaceFolder);
-						if (newSession) {
-							panel.webview.postMessage({ command: 'sessionCreated', data: newSession });
-						}
-						return;
-					case 'getMessages':
-						const messages = await getMessages(message.data.sessionId);
-						panel.webview.postMessage({ command: 'messages', data: messages });
-						return;
-                    case 'sendMessage':
-                        const { message: msg, sessionId, model } = message.data;
-                        const handler = new AIHandler(randomUUID(), sessionId, msg, model);
-                        handler.on('data', (data) => {
-                            panel.webview.postMessage({ command: 'aiResponse', data });
-                        });
-                        handler.on('error', (error) => {
-                            panel.webview.postMessage({ command: 'aiResponseError', data: { error: error.message } });
-                        });
-                        return;
-				}
-			},
-			undefined,
-			context.subscriptions
-		);
+	const openChatView = vscode.commands.registerCommand('taraka.openChatView', () => {
+		if (ChatViewProvider.viewId) {
+			vscode.commands.executeCommand(`${ChatViewProvider.viewId}.focus`);
+		}
 	});
 
 	context.subscriptions.push(openChatView);

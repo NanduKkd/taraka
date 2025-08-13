@@ -9,21 +9,33 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:taraka.openChatView"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "taraka.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "taraka.openChatView",
         "title": "Open Taraka Chat"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "taraka-container",
+          "title": "Taraka",
+          "icon": "resources/comment.svg"
+        }
+      ]
+    },
+    "views": {
+      "taraka-container": [
+        {
+          "id": "taraka-chat-view",
+          "name": "Taraka Chat",
+          "type": "webview",
+          "visibility": "visible"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -49,6 +61,7 @@
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "glob": "^11.0.3",
+    "uuid": "^11.1.0",
     "zod": "^4.0.17"
   }
 }

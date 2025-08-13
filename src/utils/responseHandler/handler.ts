@@ -1,7 +1,7 @@
 import { sendMessage } from '../aiApi';
 import SSEParser from './SSEParser';
 import SSECompiler from './SSECompiler';
-import { Readable } from 'node:stream';
+import { PassThrough, Readable } from 'node:stream';
 import { aiEvent, modelData, toolCall, ToolResultContentBlock, UserContentBlock } from '../../types/common';
 import { executer } from '../tools/executer';
 
@@ -19,11 +19,14 @@ export default class AIHandler extends Readable {
     return super.destroy(new Error("Unknown error occured"));
   }
   async start(promptId: string, sessionId: number, content: ToolResultContentBlock[] | UserContentBlock[], model: modelData) {
+    console.log('starting....');
     try {
-      const res = await sendMessage(promptId, sessionId, content, model);
       let out: aiEvent;
       const toolCalls: toolCall[] = [];
-      for await (out of res.pipe(new SSEParser()).pipe(new SSECompiler(promptId, sessionId))) {
+      
+      const res = await sendMessage(promptId, sessionId, content, model);
+      const readable = res.pipe(new SSEParser()).pipe(new SSECompiler(promptId, sessionId));
+      for await (out of readable) {
         if(out.type==='tool') {
           toolCalls.push(out.toolCallData);
         }
@@ -41,5 +44,7 @@ export default class AIHandler extends Readable {
     } catch (error) {
       this.destroy(error);
     }
+  }
+  _read() {
   }
 }
