@@ -3,7 +3,8 @@ import SSEParser from './SSEParser';
 import SSECompiler from './SSECompiler';
 import { PassThrough, Readable } from 'node:stream';
 import { aiEvent, modelData, toolCall, ToolResultContentBlock, UserContentBlock } from '../../types/common';
-import { executer } from '../tools/executer';
+import { executer, toolCallResponse } from '../tools/executer';
+import { toolCallName } from '../tools/validations';
 
 export default class AIHandler extends Readable {
   constructor(promptId: string, sessionId: number, text: string, model: modelData) {
@@ -36,9 +37,28 @@ export default class AIHandler extends Readable {
       if(!toolCalls.length)
         return this.push({ type: 'end', id: promptId, sessionId });
       for(const tool of toolCalls) {
-        const response = await executer(tool);
+        let response: toolCallResponse;
+        switch (tool.name) {
+          case 'list_dir':
+            response = await executer(tool as toolCall<'list_dir'>);
+            break;
+          case 'read_file':
+            response = await executer(tool as toolCall<'read_file'>);
+            break;
+          case 'write_file':
+            response = await executer(tool as toolCall<'write_file'>);
+            break;
+          case 'grep_search':
+            response = await executer(tool as toolCall<'grep_search'>);
+            break;
+          case 'run_terminal_command':
+            response = await executer(tool as toolCall<'run_terminal_command'>);
+            break;
+          default:
+            throw new Error(`Unknown tool`);
+        }
         toolCallResponses.push({type: 'tool_result', toolCallId: tool.id, toolCallName: tool.name, toolCallResponse: response});
-        this.push({type: 'tool_response', toolResponse: response, id: promptId, sessionId});
+        this.push({type: 'tool_response', toolCallId: tool.id, toolResponse: response, id: promptId, sessionId});
       }
       this.start(promptId, sessionId, toolCallResponses, model);
     } catch (error) {

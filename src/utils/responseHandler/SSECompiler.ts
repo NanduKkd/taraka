@@ -85,6 +85,15 @@ export default class SSECompiler extends Transform {
     } else if(msg.event==='message_end') {
       if(!this.msgId)
         throw new Error("Message end event received but id not set");
+    } else if(msg.event==='error') {
+      if(!this.msgId)
+        throw new Error("Message end event received but id not set");
+      return {
+        type: "error",
+        id: this.msgId,
+        sessionId: this.sessionId,
+        error: msg.data.message,
+      }
     }
   }
   _transform(msg: messageEvent, _encoding: any, callback: (e?: Error | null, data?: contentEvent | null) => void) {
@@ -93,6 +102,7 @@ export default class SSECompiler extends Transform {
       if(res) callback(null, res);
       else callback();
     } catch (error) {
+      console.error(error);
       if(error instanceof Error)
         callback(error);
       else

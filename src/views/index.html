@@ -25,21 +25,6 @@
                 <button id="new-session-btn">New Session</button>
             </div>
             <div class="chat-view" id="chat-view">
-                <div class="message user-message">
-                    <p>This is a user message.</p>
-                </div>
-                <div class="message ai-message">
-                    <p>This is an AI message.</p>
-                </div>
-                <div class="message thinking-message">
-                    <p>This is a thinking message.</p>
-                </div>
-                <div class="message ai-message">
-                    <div class="tool-call-card">
-                        <div class="tool-call-title">Tool Call: readFile</div>
-                        <div class="tool-call-subtitle">path/to/file.txt</div>
-                    </div>
-                </div>
             </div>
             <div class="message-area">
                 <textarea id="message-input" placeholder="Type your message..."></textarea>
@@ -54,7 +39,7 @@
                     <input type="checkbox" id="yolo-mode" disabled checked name="yolo-mode">
                     <label for="yolo-mode">YOLO Mode</label>
                 </div>
-                <button id="send-btn">Send</button>
+                <button id="send-btn"><span>Send</span><div class="loader"></div></button>
             </div>
         </div>
     </div>

@@ -4,11 +4,11 @@ enum toolCallNameEnum {
 }
 export const toolCallArgValidators = z.object({
   list_dir: z.object({
-    folderPath: z.string(),
+    dirPath: z.string(),
     search: z.string().optional(),
   }),
   read_file: z.object({
-    path: z.string(),
+    filePath: z.string(),
     startLineInclusive: z.number().optional(),
     endLineExclusive: z.number().optional(),
   }),

@@ -1,5 +1,5 @@
 import { toolCall, toolCallName } from './validations';
-import { listFiles, FileSystemItem, writeFile, readFile, grepSearch, runCommand } from '../workspaceInterface';
+import { listFiles, FileSystemItem, readFile, grepSearch, runCommand } from '../workspaceInterface';
 import executeWrite from './executeWrite';
 
 type toolResponse<
@@ -39,11 +39,11 @@ export async function executer(tool: toolCall<toolCallName>): Promise<toolCallRe
   try {
     switch (tool.name) {
       case 'list_dir': {
-        const out: toolCallResponse<typeof tool.name> = makeOutput({items: await listFiles(tool.args.folderPath, tool.args.search || '', 1)});
+        const out: toolCallResponse<typeof tool.name> = makeOutput({items: await listFiles(tool.args.dirPath, tool.args.search || '', 1)});
         return out;
       }
       case 'read_file': {
-        const text = await readFile(tool.args.path, tool.args.startLineInclusive, tool.args.endLineExclusive);
+        const text = await readFile(tool.args.filePath, tool.args.startLineInclusive, tool.args.endLineExclusive);
         const out: toolCallResponse<typeof tool.name> = makeOutput({ text });
         return out;
       }

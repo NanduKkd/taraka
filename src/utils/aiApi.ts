@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { modelData, UserContentBlock, ToolResultContentBlock } from '../types/common';
 import { Readable } from 'node:stream';
+import { AxiosError } from 'axios';
 
 const aiApi = axios.create({
 	headers: {
@@ -40,8 +41,16 @@ export const sendMessage = async(prompt_id: string, session_id: number, content:
 	}
 }
 export const sendCodeReplace = async({ filePath, actualCode, newCode }: {filePath: string, actualCode: string, newCode: string}): Promise<string> => {
-  const res = await aiApi({ method: 'POST', data: { type: 'code_replace', filePath, actualCode, newCode } })
+  try {
+    const res = await aiApi({ method: 'POST', data: { type: 'code_replace', filePath, actualCode, newCode } })
+  console.log(res.data)
   return res.data.code;
+  } catch (error) {
+    console.error(error)
+    if(error instanceof AxiosError && error.response?.data)
+      console.log(error.response.data, error.response.status);
+    throw error;
+  }
 }
 
 export default aiApi;

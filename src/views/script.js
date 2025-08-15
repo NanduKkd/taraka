@@ -21,11 +21,41 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentAiMessage = null, lastContent = null;
   const toolCallCards = {};
 
+  function disableInputs() {
+    sessionDropdown.classList.add('disabled');
+    newSessionBtn.classList.add('disabled');
+    messageInput.classList.add('disabled');
+    sendBtn.classList.add('loading');
+    sendBtn.disabled = true;
+  }
+
+  function enableInputs() {
+    sessionDropdown.classList.remove('disabled');
+    newSessionBtn.classList.remove('disabled');
+    messageInput.classList.remove('disabled');
+    sendBtn.classList.remove('loading');
+    sendBtn.disabled = false;
+  }
+
+  function scrollToBottom() {
+    chatView.scrollTop = chatView.scrollHeight;
+  }
+
+  function showError(message) {
+    const errorElement = document.createElement('div');
+    errorElement.classList.add('message', 'error-message');
+    errorElement.innerHTML = `<p>Error: ${message}</p>`;
+    chatView.appendChild(errorElement);
+    currentAiMessage = null;
+    lastContent = null;
+    enableInputs();
+  }
+
   function processMessageContent(content) {
     if(content.type==='tool') {
       return { type: 'tool', toolCallData: { id: content.toolCallId, name: content.name, args: content.args } };
     } else if(content.type==='tool_result') {
-      return { type: 'tool_response', toolResponse: content.toolCallResponse };
+      return { type: 'tool_response', toolCallId: content.toolCallId, toolResponse: content.toolCallResponse };
     }
     return content;
   }
@@ -53,7 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
         toolCallElement.classList.add('tool-call-card');
         toolCallElement.id = `tool-call-${content.toolCallData.id}`;
         toolCallElement.innerHTML = `
-          <div class="tool-call-title">Tool Call: ${content.toolCallData.name}</div>
+          <div class="tool-call-header">
+            <div class="tool-call-title">Tool Call: ${content.toolCallData.name}</div>
+            <span class="toggle-icon">+</span>
+          </div>
           <div class="tool-call-subtitle">ID: ${content.toolCallData.id}</div>
           `;
         chatView.appendChild(toolCallElement);
@@ -69,16 +102,25 @@ document.addEventListener('DOMContentLoaded', () => {
           toolCallElement.classList.add('tool-call-card');
           toolCallElement.id = `tool-call-${content.toolCallData.id}`;
           toolCallElement.innerHTML = `
-            <div class="tool-call-title">Tool Call: ${content.toolCallData.name}</div>
+            <div class="tool-call-header">
+              <div class="tool-call-title">Tool Call: ${content.toolCallData.name}</div>
+              <span class="toggle-icon">+</span>
+            </div>
             <div class="tool-call-subtitle">ID: ${content.toolCallData.id}</div>
             `;
           chatView.appendChild(toolCallElement);
           card = toolCallCards[content.toolCallData.id] = toolCallElement;
         }
-        const argsElement = document.createElement('div');
+        const collapsible = card.appendChild(document.createElement('div'));
+        collapsible.classList.add('collapsible-content', 'collapsed');
+        const argsElement = collapsible.appendChild(document.createElement('div'));
         argsElement.classList.add('tool-call-args');
         argsElement.textContent = JSON.stringify(content.toolCallData.args, null, 2);
-        card.appendChild(argsElement);
+        card.querySelector('.tool-call-header').addEventListener('click', (e) => {
+          const icon = card.querySelector('.toggle-icon');
+          collapsible.classList.toggle('collapsed');
+          icon.textContent = collapsible.classList.contains('collapsed') ? '+' : '-';
+        });
         break;
       }
       case 'tool_response': {
@@ -91,7 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="tool-response-title">Tool Response: ${content.toolResponse.status}</div>
             <span class="toggle-icon">+</span>
           </div>
-          <div class="collapsible-content hidden">
+          <div class="tool-response-subtitle">ID: ${content.toolCallId}</div>
+          <div class="collapsible-content collapsed">
             <div class="tool-response-content">${JSON.stringify(content.toolResponse, null, 2)}</div>
           </div>
           `;
@@ -106,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
     };
+    scrollToBottom();
   }
 
   loginBtn.addEventListener('click', () => {
@@ -120,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle messages from the extension
   window.addEventListener('message', event => {
+    console.log('[UI] got msg', event.data);
     const message = event.data;
     switch (message.command) {
       case 'loginResponse':
@@ -184,16 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
           case 'end':
             currentAiMessage = null;
             lastContent = null;
+            enableInputs();
+            break;
+          case 'error':
+            showError(message.data.error);
+            scrollToBottom();
             break;
         }
         break;
       case 'aiResponseError':
-        const errorElement = document.createElement('div');
-        errorElement.classList.add('message', 'error-message');
-        errorElement.innerHTML = `<p>Error: ${message.data.error}</p>`;
-        chatView.appendChild(errorElement);
-        currentAiMessage = null;
-        lastContent = null;
+        showError(message.data.error);
+        scrollToBottom();
         break;
     }
   });
@@ -220,6 +266,12 @@ document.addEventListener('DOMContentLoaded', () => {
       mentionDropdown.classList.remove('show');
     }
   });
+  messageInput.addEventListener('keydown', (e) => {
+    console.log(e);
+    if(e.key==='Enter' && e.shiftKey===true && !sendBtn.disabled) {
+      sendBtn.click();
+    }
+  })
 
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('dropdown-item')) {
@@ -244,7 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
     userMessage.classList.add('message', 'user-message');
     userMessage.innerHTML = `<p>${message}</p>`;
     chatView.appendChild(userMessage);
+    scrollToBottom();
 
+    disableInputs();
 
     vscode.postMessage({
       command: 'sendMessage',

@@ -2,7 +2,7 @@
   "name": "taraka",
   "displayName": "Taraka",
   "description": "The one who helps you deliver",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.102.0"
   },
@@ -10,6 +10,9 @@
     "Other"
   ],
   "main": "./out/extension.js",
+  "activationEvents": [
+    "onView:taraka-chat-view"
+  ],
   "contributes": {
     "commands": [
       {
@@ -54,7 +57,8 @@
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.32.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vsce": "^2.15.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",

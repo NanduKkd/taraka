@@ -11,9 +11,10 @@ export type textApiUpdate = {id: string, sessionId: number, type: 'text', text: 
 export type thinkingApiUpdate = {id: string, sessionId: number, type: 'thinking', thinking: string};
 export type toolCallStartApiUpdate = {id: string, sessionId: number, type: 'tool_start', toolCallData: Omit<toolCall, 'args'>};
 export type toolCallApiUpdate = {id: string, sessionId: number, type: 'tool', toolCallData: toolCall};
+export type errorApiUpdate =  { type: 'error', id: string, sessionId: number, error: string };
 
-export type contentEvent = textApiUpdate | thinkingApiUpdate | toolCallStartApiUpdate | toolCallApiUpdate
-export type aiEvent = contentEvent | { id: string, sessionId: number, type: 'tool_response', toolResponse: toolCallResponse } | { type: 'end', id: string, sessionId: number };
+export type contentEvent = textApiUpdate | thinkingApiUpdate | toolCallStartApiUpdate | toolCallApiUpdate | errorApiUpdate;
+export type aiEvent = contentEvent | { id: string, sessionId: number, type: 'tool_response', toolResponse: toolCallResponse, toolCallId: string } | { type: 'end', id: string, sessionId: number };
 
 
 export type openaiModel = 'o4-mini' | 'gpt-4.1' | 'gpt-4.1-mini' | 'gpt-4.1-nano';

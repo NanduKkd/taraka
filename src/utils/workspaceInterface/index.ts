@@ -19,29 +19,26 @@ export interface FileSystemItem {
   */
 export async function listFiles(folderPath: string, search: string, depth: number): Promise<FileSystemItem[]> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (!workspaceFolder) {
-    return [];
-  }
   if(!folderPath.startsWith('/')) {
-
+    if (!workspaceFolder) {
+      return [];
+    }
     folderPath = path.join(workspaceFolder, folderPath);
   }
-  const pattern = depth > 0 ? `${folderPath}/**` : `${folderPath}/**/*`;
 
   const files = fs.readdirSync(folderPath);;
-  // const files = await glob(pattern, { ignore: '**/node_modules/**', nodir: false, dot: true, maxDepth: depth > 0 ? depth : undefined });
 
   const items: FileSystemItem[] = files
-  .filter(file => path.basename(file).includes(search))
-  .map(file => {
-    const fullName = path.join(folderPath, file);
-    const stats = fs.statSync(fullName);
-    return {
-      name: file,
-      path: fullName,
-      isFolder: stats.isDirectory(),
-    };
-  });
+    .filter(file => path.basename(file).includes(search))
+    .map(file => {
+      const fullName = path.join(folderPath, file);
+      const stats = fs.statSync(fullName);
+      return {
+        name: file,
+        path: fullName,
+        isFolder: stats.isDirectory(),
+      };
+    });
 
   return items;
 }
@@ -68,24 +65,6 @@ export async function readFile(filePath: string, startLineInclusive?: number, en
 }
 
 /**
-  * Writes content to a file.
-  * @param content The content to write.
-  * @param filePath The path to the file to write to.
-  * @param shouldCreateNewFile Whether to create a new file if it doesn't exist.
-  */
-export async function writeFile(content: string, filePath: string, shouldCreateNewFile: boolean): Promise<void> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (!workspaceFolder) {
-    throw new Error("No workspace folder found.");
-  }
-  const absolutePath = path.join(workspaceFolder, filePath);
-  if (!shouldCreateNewFile && !fs.existsSync(absolutePath)) {
-    throw new Error("File does not exist and shouldCreateNewFile is false.");
-  }
-  await fs.promises.writeFile(absolutePath, content);
-}
-
-/**
   * Searches for a pattern in all files in a given folder.
   * @param folderPath The path to the folder to search in.
   * @param pattern The pattern to search for.
@@ -97,7 +76,7 @@ export async function grepSearch(folderPath: string, pattern: string): Promise<s
     if (!workspaceFolder) {
       return reject("No workspace folder found.");
     }
-    const absolutePath = path.join(workspaceFolder, folderPath);
+    const absolutePath = folderPath.startsWith('/') ? folderPath : path.join(workspaceFolder, folderPath);
     exec(`git grep -l "${pattern}" ${absolutePath}`, (error, stdout, stderr) => {
       if (error) {
         return reject(error);
