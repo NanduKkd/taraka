@@ -14,6 +14,10 @@ When a message crashes, you have to repoen Taraka again to continue your chat. S
 
 Users appreciate release notes as you update your extension.
 
+### 0.0.3
+
+API URL update
+
 ### 0.0.2
 
 Tool execution fixes, better user-friendly UI
