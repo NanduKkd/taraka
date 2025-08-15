@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle messages from the extension
   window.addEventListener('message', event => {
-    console.log('[UI] got msg', event.data);
+    // console.log('[UI] got msg', event.data);
     const message = event.data;
     switch (message.command) {
       case 'loginResponse':

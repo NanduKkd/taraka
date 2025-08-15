@@ -89,6 +89,16 @@ export async function grepSearch(folderPath: string, pattern: string): Promise<s
   });
 }
 
+async function askUserPermission(command: string): Promise<void> {
+  const out = await vscode.window.showWarningMessage(
+    'Allow execution of command "'+command+'" ?',
+    "Allow execution",
+    "Don't allow"
+  );
+  if(out!=="Allow execution")
+    throw new Error("User did not give permission to execute this command");
+}
+
 /**
   * Runs a terminal command using VSCode's shell integration and returns its output.
   * @param command The command to run.
@@ -96,6 +106,7 @@ export async function grepSearch(folderPath: string, pattern: string): Promise<s
   * @returns A promise that resolves to the stdout of the command, or 'Running parallely' if in background.
   */
 export async function runCommand(command: string, isBackground: boolean = false): Promise<string> {
+  await askUserPermission(command);
   const terminal = vscode.window.createTerminal(v4());
   let run = false;
   return new Promise((resolve, reject) => {
